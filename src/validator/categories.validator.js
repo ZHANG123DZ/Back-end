@@ -28,7 +28,7 @@ exports.createCategoryValidator = [
   handlerValidationErrors,
 ];
 
-exports.createCategoryValidator = [
+exports.updateCategoryValidator = [
   checkSchema({
     name: {
       isString: true,
