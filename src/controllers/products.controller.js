@@ -1,85 +1,41 @@
-const { readDB, writeDB } = require('../utils/files.util');
-const RESOURCE = 'products';
+const productsService = require('@/services/products.service');
+
+const response = require('@/utils/response');
+const throwError = require('@/utils/throwError');
 
 const show = async (req, res) => {
-  const products = await readDB(RESOURCE);
-  res.json({
-    status: 'success',
-    data: products,
-  });
+  const products = await productsService.getProducts();
+  response.success(res, 200, products);
 };
 
 const index = async (req, res) => {
-  const products = await readDB(RESOURCE);
-  const product = products.find((product) => product.id === +req.params.id);
+  const product = await productsService.getProductById(req.params.id);
 
-  if (!product) {
-    res.status(404).json({ status: 'error', message: 'Resource not found' });
-    return;
-  }
+  if (!product) throwError(404, 'Not Found.');
 
-  res.json({
-    status: 'success',
-    data: product,
-  });
+  response.success(res, 200, product);
 };
 
 const store = async (req, res) => {
-  const products = await readDB(RESOURCE);
-  const nextId = (products.at(-1)?.id ?? 0) + 1;
-  const product = {
-    ...req.body,
-    id: nextId,
-  };
+  const product = await productsService.createProduct(req.body);
 
-  products.push(product);
-
-  await writeDB(RESOURCE, products);
-
-  res.status(201).json({
-    status: 'success',
-    data: product,
-  });
+  response.success(res, 201, product);
 };
 
 const update = async (req, res) => {
-  const products = await readDB(RESOURCE);
-  const product = products.find((product) => product.id === +req.params.id);
+  const product = await productsService.updateProduct(req.params.id, req.body);
 
-  if (!product) {
-    res.status(404).json({
-      status: 'error',
-      message: 'Resource not found.',
-    });
-    return;
-  }
+  if (!product) throwError(404, "Not Found.");
 
-  Object.assign(product, req.body);
-
-  await writeDB(RESOURCE, products);
-
-  res.json({ status: 'success', data: product });
+  response.success(res, 201, product);
 };
 
 const destroy = async (req, res) => {
-  const products = await readDB(RESOURCE);
-  const productIndex = products.findIndex(
-    (product) => product.id === +req.params.id
-  );
+  const result = deleteProduct(req.params.id);
 
-  if (productIndex === -1) {
-    res.status(404).json({
-      status: 'error',
-      message: 'Resource not found.',
-    });
-    return;
-  }
+  if (!result) throwError(404, "Not Found");
 
-  products.splice(productIndex, 1);
-
-  await writeDB(RESOURCE, products);
-
-  res.status(204).send();
+  response.success(res, 204);
 };
 
 module.exports = { show, index, store, update, destroy };

@@ -1,9 +1,9 @@
 const express = require('express');
-const todosController = require('../controllers/todos.controller');
+const todosController = require('@/controllers/todos.controller');
 const {
   createTodoValidator,
   updateTodoValidator,
-} = require('../validator/todos.validator');
+} = require('@/validator/todos.validator');
 const router = express.Router();
 
 router.get('/', todosController.show);
